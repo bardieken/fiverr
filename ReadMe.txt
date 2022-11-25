@@ -6,7 +6,8 @@ input.txt contains all 4 test together. I did that to help you quickly audit my 
 input.txt:
 1. line is the line needs to corrected.
 2. line is the correct line. 
-So in result 1. line of text and 2. line of text should be identical.
+So in result output file:
+1. line of text and 2. line of text should be identical.
 If you want you can try all tests 1 by 1 also.
 Thanks and best regards
 
