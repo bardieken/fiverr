@@ -1,87 +1,85 @@
 package main
 
 import (
+	"os"
 	"strconv"
 	"strings"
-	"os"
 )
 
+// Read files
 func main() {
-	// read file content, write it into string and new output file
-	input, _ := os.ReadFile(os.Args[1])
-	finalText := ChangeInput(strings.Split(string(input), " "))
-	writeFile(finalText)
+	givenText, _ := os.ReadFile(os.Args[1])
+	finalText := NewInput(strings.Split(string(givenText), " "))
+	output(finalText)
 }
 
-var (
-	// temporary file content holder
-	Newtext   = []string{}
-)
+// create a new string
+var TempString = []string{}
 
-func ChangeInput(textArray []string) string{
-	//make a required changes on input text and return the string of input text
-	Newtext = append(Newtext, textArray[0])
-	for i := 1; i < len(textArray); i++ {
-		stringFromArray := Newtext[len(Newtext)-1]
-		pos := len(Newtext) - 1
-			switch strings.ToLower(textArray[i]) {
-			case "(hex)":
-				Newtext[pos] = convertNum(stringFromArray, 16)
-			case "(bin)":
-				Newtext[pos] = convertNum(stringFromArray, 2)
-			case "(up)":
-				Newtext[pos] = strings.ToUpper(stringFromArray)
-			case "(low)":
-				Newtext[pos] = strings.ToLower(stringFromArray)
-			case "(cap)":
-				Newtext[pos] = strings.Title(stringFromArray)
-			case "(cap,":
-				for j := 1; j <= findNumber(textArray[i+1]); j++ {
-					Newtext[len(Newtext)-j] = strings.Title(Newtext[len(Newtext)-j])
-				}
-				i++
-			case "(low,":
-				for j := 1; j <= findNumber(textArray[i+1]); j++ {
-					Newtext[len(Newtext)-j] = strings.ToLower(Newtext[len(Newtext)-j])
-				}
-				i++
-			case "(up,":
-				for j := 1; j <= findNumber(textArray[i+1]); j++ {
-					Newtext[len(Newtext)-j] = strings.ToUpper(Newtext[len(Newtext)-j])
-				}
-				i++
-			case "a"  :
-				Newtext = append(Newtext, checkArticel(textArray[i], string(textArray[i+1][0])))
-			default:
-				Newtext = append(Newtext, textArray[i])
+// make a required changes on input text and return the string of input text
+func NewInput(articleArray []string) string {
+	TempString = append(TempString, articleArray[0])
+	for i := 1; i < len(articleArray); i++ {
+		getStringArray := TempString[len(TempString)-1]
+		pos := len(TempString) - 1
+		switch strings.ToLower(articleArray[i]) {
+		case "(hex)":
+			TempString[pos] = numberConvert(getStringArray, 16)
+		case "(bin)":
+			TempString[pos] = numberConvert(getStringArray, 2)
+		case "(up)":
+			TempString[pos] = strings.ToUpper(getStringArray)
+		case "(low)":
+			TempString[pos] = strings.ToLower(getStringArray)
+		case "(cap)":
+			TempString[pos] = strings.Title(getStringArray)
+		case "(cap,":
+			for j := 1; j <= setNumber(articleArray[i+1]); j++ {
+				TempString[len(TempString)-j] = strings.Title(TempString[len(TempString)-j])
 			}
+			i++
+		case "(low,":
+			for j := 1; j <= setNumber(articleArray[i+1]); j++ {
+				TempString[len(TempString)-j] = strings.ToLower(TempString[len(TempString)-j])
+			}
+			i++
+		case "(up,":
+			for j := 1; j <= setNumber(articleArray[i+1]); j++ {
+				TempString[len(TempString)-j] = strings.ToUpper(TempString[len(TempString)-j])
+			}
+			i++
+		case "a":
+			TempString = append(TempString, articleControl(articleArray[i], string(articleArray[i+1][0])))
+		default:
+			TempString = append(TempString, articleArray[i])
+		}
 	}
-	//join an array of strings into a string, separate with a space. 
-	return correctPunctuation(strings.Join(Newtext, " "))
+
+	return puncCorrection(strings.Join(TempString, " "))
 }
 
-func checkArticel(article string, firstChar string) string {
-	//check if the next word starts with a vowel or "h" and return the correct article
+func articleControl(article string, firstChar string) string {
+	// check if the word is an article
 	if strings.ContainsAny(firstChar, "aeiouhAEIOUH") {
 		return article + "n"
 	}
 	return article
 }
 
-func findNumber(w string) int {
-	//convert the given number in string into an integer
+func setNumber(w string) int {
+	// find number
 	intVar, _ := strconv.Atoi(w[:len(w)-1])
 	return intVar
 }
 
-func convertNum(inputNum string, i int) string {
-	//cconvert the given hexadecimal or binary number into decimal and return the string of this number
+func numberConvert(inputNum string, i int) string {
+	// convert to int
 	num, _ := strconv.ParseInt(inputNum, i, 64)
 	return strconv.Itoa(int(num))
 }
 
-func correctPunctuation(finalText string) string {
-	//replace all wrong spacing and return correct final text
+func puncCorrection(finalText string) string {
+	// correct punctuation
 	for range finalText {
 		finalText = strings.ReplaceAll(finalText, " ,", ", ")
 		finalText = strings.ReplaceAll(finalText, " .", ". ")
@@ -91,14 +89,14 @@ func correctPunctuation(finalText string) string {
 		finalText = strings.ReplaceAll(finalText, " ;", "; ")
 		finalText = strings.ReplaceAll(finalText, "  ", " ")
 	}
-	//handel exceptions with upper comma
+	// correct capitalization
 	finalText = strings.ReplaceAll(finalText, " '", "'")
 	finalText = strings.ReplaceAll(finalText, ":' ", ": '")
 	return finalText
 }
 
-func writeFile(fileContent string) {
-	//get an output filename, convert it to bytes and write a new file
+func output(fileContent string) {
+	// write to file
 	outputFile := os.Args[2]
 	output := []byte(fileContent)
 	os.WriteFile(outputFile, output, 0o664)
